@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kgc.dao.BookDao">
+    <resultMap id="bookResultMap" type="com.kgc.entity.Book">
+        <id property="bookid" column="bookid"></id>
+        <result property="bookname" column="bookname"></result>
+        <result property="price" column="price"></result>
+        <result property="pubtime" column="pubtime"></result>
+        <result property="author" column="author"></result>
+        <result property="typeid" column="typeid"></result>
+        <!--多对一(一对多)-->
+        <association property="bookType" javaType="com.kgc.entity.BookType">
+            <id property="typeid" column="tid"></id>
+            <result property="typename" column="typename"></result>
+        </association>
+    </resultMap>
+        <!--查询操作-->
+        <select id="getBookByPage" resultMap="bookResultMap">
+            select b.*,
+            t.typeid as tid,t.typename
+            from book b
+            inner join booktype t
+            on b.typeid=t.typeid
+            <where>
+                <if test="typeid!=null and typeid!=-1">
+                    and b.typeid=#{typeid}
+                </if>
+                <if test="author!=null and author!=''">
+                    and b.author like concat('%',#{author},'%')
+                </if>
+                <if test="min_price!=null and min_price!=''">
+                    and b.price&gt;=#{min_price}
+                </if>
+                <if test="max_price!=null and max_price!=''">
+                    and b.price&lt;=#{max_price}
+                </if>
+            </where>
+            order by b.bookid
+            limit #{pageNo},#{pageSize}
+        </select>
+        <select id="getTotalCount" resultType="int">
+            select count(*)
+            from book b
+            <where>
+                <if test="typeid!=null and typeid!=-1">
+                    and b.typeid=#{typeid}
+                </if>
+                <if test="author!=null and author!=''">
+                    and b.author like concat('%',#{author},'%')
+                </if>
+                <if test="min_price!=null and min_price!=''">
+                    and b.price&gt;=#{min_price}
+                </if>
+                <if test="max_price!=null and max_price!=''">
+                    and b.price&lt;=#{max_price}
+                </if>
+            </where>
+        </select>
+</mapper>
